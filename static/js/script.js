@@ -53,7 +53,7 @@ document.addEventListener("DOMContentLoaded", function () {
             <li>
               <figure>
 
-                <img src="static/shapes/${place[0]}">
+                <img src="static/shapes/countries/${place[0]}">
                 <figcaption>
                   <h3>
                     ${index + 1}. ${place[0]}

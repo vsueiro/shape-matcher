@@ -49,7 +49,7 @@ def compare_with_folder(folder_path, base_image):
 def upload():
     data = request.get_json()
     base_image_base64 = data['image']
-    folder_path = './static/shapes/'
+    folder_path = './static/shapes/countries/'
 
     # Save the base64 string as an image
     # output_path = './user-shapes/received_image.png'

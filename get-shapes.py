@@ -6,7 +6,30 @@ from shapely.geometry import box
 
 output_dir = './static/shapes/countries/'
 
+# Load Natural Earth map
 world = gpd.read_file('./shape-files/ne_10m_admin_0_countries/ne_10m_admin_0_countries.shp')
+
+print(world.shape)
+
+# Group by 'SOVEREIGNT' and combine geometries
+grouped = world.groupby('SOVEREIGNT')
+
+# Combine geometries
+combined_geometries = grouped['geometry'].apply(lambda x: x.unary_union)
+
+# Aggregate other columns. Adjust this based on your specific needs
+aggregated_data = grouped.agg({
+    'LABELRANK': 'first',
+})
+
+# Combine aggregated data with combined geometries
+world_combined = aggregated_data.join(combined_geometries)
+
+
+# Reset the index to make 'SOVEREIGNT' a column again, if needed
+world_combined.reset_index(inplace=True)
+
+print(world_combined.shape)
 
 def process_country(geometry):
     # Get the bounds of the geometry and calculate its dimensions and aspect ratio
@@ -48,7 +71,7 @@ def save_country_image(geometry, name):
 os.makedirs(output_dir, exist_ok=True)
 
 # Process and save each country
-for index, row in world.iterrows():
+for index, row in world_combined.iterrows():
     geometry = process_country(row['geometry'])  # Pass only the geometry
     save_country_image(geometry, row['SOVEREIGNT'].replace(' ', '_'))
 
