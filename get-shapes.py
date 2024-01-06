@@ -1,15 +1,17 @@
+import pandas as pd
 import geopandas as gpd
 import matplotlib.pyplot as plt
 import os
 from shapely.affinity import translate, scale
 from shapely.geometry import box
 
+# Set the option to display all columns
+pd.set_option('display.max_columns', None)
+
 output_dir = './static/shapes/countries/'
 
 # Load Natural Earth map
 world = gpd.read_file('./shape-files/ne_10m_admin_0_countries/ne_10m_admin_0_countries.shp')
-
-print(world.shape)
 
 # Group by 'SOVEREIGNT' and combine geometries
 grouped = world.groupby('SOVEREIGNT')
@@ -20,14 +22,18 @@ combined_geometries = grouped['geometry'].apply(lambda x: x.unary_union)
 # Aggregate other columns. Adjust this based on your specific needs
 aggregated_data = grouped.agg({
     'LABELRANK': 'first',
+    'ISO_A2': 'first',
 })
+
+
 
 # Combine aggregated data with combined geometries
 world_combined = aggregated_data.join(combined_geometries)
 
-
 # Reset the index to make 'SOVEREIGNT' a column again, if needed
 world_combined.reset_index(inplace=True)
+
+# TODO: FIX -99 ISO_A2 for some countries
 
 print(world_combined.shape)
 
@@ -73,5 +79,8 @@ os.makedirs(output_dir, exist_ok=True)
 # Process and save each country
 for index, row in world_combined.iterrows():
     geometry = process_country(row['geometry'])  # Pass only the geometry
-    save_country_image(geometry, row['SOVEREIGNT'].replace(' ', '_'))
+
+    filename = f"{row['SOVEREIGNT'].replace(' ', '_')}-{row['ISO_A2']}"
+
+    save_country_image(geometry, filename)
 
