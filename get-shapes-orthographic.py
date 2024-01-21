@@ -20,6 +20,9 @@ if not os.path.exists(output_dir):
 # Load Natural Earth map
 world = gpd.read_file('./shape-files/ne_10m_admin_0_countries/ne_10m_admin_0_countries.shp')
 
+# print(world[world["SOVEREIGNT"] == "Kazakhstan"])
+# exit()
+
 def clip_country_geometry(world_df, country_name, minx, miny, maxx, maxy):
     """
     Clips the geometry of a specified country within a GeoDataFrame to a given bounding box.
@@ -60,7 +63,6 @@ def plot_country_multipolygons(gdf, country_name, output_file):
     :param country_name: The name of the country to plot.
     :param output_file: Path to save the output plot image.
     """
-    print(f"Number of polygons in the {country_name}: {len(world[world['ADMIN'] == country_name].geometry.iloc[0].geoms)}")
 
     # Get the geometry of the specified country
     country_geometry = gdf[gdf['ADMIN'] == country_name].geometry.iloc[0]
@@ -90,6 +92,10 @@ def plot_country_multipolygons(gdf, country_name, output_file):
 cyprus_areas = world[world['SOVEREIGNT'].isin(['Cyprus No Mans Area', 'Northern Cyprus', 'Cyprus'])]
 world.loc[world['SOVEREIGNT'] == 'Cyprus', 'geometry'] = cyprus_areas.unary_union
 
+# Kazakhstan and Baykonur Cosmodrome
+kazakhstan_areas = world[world['SOVEREIGNT'].isin(['Kazakhstan'])]
+world.loc[world['ADMIN'] == 'Kazakhstan', 'geometry'] = kazakhstan_areas.unary_union
+
 # List of locations to remove
 locations_to_remove = [
     "Bajo Nuevo Bank (Petrel Is.)",
@@ -114,6 +120,12 @@ locations_to_remove = [
     "Coral Sea Islands", # ADMIN
     "French Southern and Antarctic Lands", # ADMIN
     "Indian Ocean Territories", # ADMIN
+    "Baykonur Cosmodrome", # ADMIN
+    "Wallis and Futuna", # ADMIN
+    "US Naval Base Guantanamo Bay", # ADMIN
+    "Sint Maarten", # ADMIN
+    "Saint Barthelemy", # ADMIN
+    "Nauru", # ADMIN (too tiny)
 ]
 
 # Remove locations
@@ -137,6 +149,21 @@ world = clip_country_geometry(world, 'United States of America', -129.0,23.6,-59
 
 # France: remove tiny islands
 world = clip_country_geometry(world, 'France', -6.41,38.11,12.87,51.89)
+
+# Spain: remove Canary Islands
+world = clip_country_geometry(world, 'Spain', -11.87,35.66,5.12,44.39)
+
+# South Africa: remove tiny islands
+world = clip_country_geometry(world, 'South Africa', 12.57,-36.33,36.66,-20.45)
+
+# Equatorial Guinea: remove tiny islands
+world = clip_country_geometry(world, 'Equatorial Guinea', 7.4759,0.4763,11.7965,4.2752)
+
+# Norway: remove Svalbard
+world = clip_country_geometry(world, 'Norway', 1.72,55.72,34.43,72.12)
+
+# Antigua and Barbuda: remove tiny island
+world = clip_country_geometry(world, 'Antigua and Barbuda', -62.1511,16.849,-61.4497,17.8856)
 
 # Group by 'SOVEREIGNT' and combine geometries
 grouped = world.groupby('ADMIN')
