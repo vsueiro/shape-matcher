@@ -18,6 +18,10 @@ if not os.path.exists(output_dir):
 # Load Natural Earth map
 world = gpd.read_file('./shape-files/ne_10m_admin_0_countries/ne_10m_admin_0_countries.shp')
 
+# print(world[world["SOVEREIGNT"] == "Denmark"])
+
+# exit()
+
 # Combine locations
 
 # Cyprus
@@ -42,11 +46,18 @@ locations_to_remove = [
     "Monaco", # looks like a blob
     "Vatican", # looks like a blob
     "Cyprus No Mans Area", # (merged
-    "Northern Cyprus" # merged
+    "Northern Cyprus", # merged
+    "Ashmore and Cartier Islands", # ADMIN
+    "Clipperton Island", # ADMIN
+    "Coral Sea Islands", # ADMIN
+    "French Southern and Antarctic Lands", # ADMIN
+    "Indian Ocean Territories", # ADMIN
 ]
 
 # Remove locations
 world = world[~world['SOVEREIGNT'].isin(locations_to_remove)]
+
+world = world[~world['ADMIN'].isin(locations_to_remove)]
 
 # Remove parts of locations
 
@@ -54,11 +65,12 @@ world = world[~world['SOVEREIGNT'].isin(locations_to_remove)]
 world = world[~((world['SOVEREIGNT'] == 'United Kingdom') & (world['SUBREGION'] != 'Northern Europe'))]
 
 # Group by 'SOVEREIGNT' and combine geometries
-grouped = world.groupby('SOVEREIGNT')
+grouped = world.groupby('ADMIN')
 
 # TODO: Get more detailed shapes
 
 # Nauru (looks like a blob)
+# St Barthélemy (looks like a blob)
 
 # TODO: Remove parts of locations
 
