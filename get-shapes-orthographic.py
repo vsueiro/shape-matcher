@@ -18,30 +18,34 @@ if not os.path.exists(output_dir):
 # Load Natural Earth map
 world = gpd.read_file('./shape-files/ne_10m_admin_0_countries/ne_10m_admin_0_countries.shp')
 
+# List of locations to remove
+locations_to_remove = [
+    "Bajo Nuevo Bank (Petrel Is.)",
+    "Bir Tawil",
+    "Brazilian Island",
+    "Federated States of Micronesia",
+    "Kiribati",
+    "Maldives",
+    "Marshall Islands",
+    "Scarborough Reef",
+    "Serranilla Bank",
+    "Seychelles",
+    "Spratly Islands",
+    "Tonga",
+    "Tuvalu",
+    "Monaco", # (looks like a blob)
+    "Vatican", # (looks like a blob)
+]
+
+# Remove the specified locations
+world = world[~world['SOVEREIGNT'].isin(locations_to_remove)]
+
 # Group by 'SOVEREIGNT' and combine geometries
 grouped = world.groupby('SOVEREIGNT')
 
 # TODO: Get more detailed shapes
 
 # Nauru (looks like a blob)
-# Monaco (looks like a blob)
-# Vatican (looks like a blob)
-
-# TODO: Remove locations
-
-# Bajo Nuevo Bank (Petrel Is.)
-# Bir Tawil * Kinda intersting tho
-# Brazilian Island
-# Federated States of Micronesia
-# Kiribati
-# Maldives
-# Marshall Islands
-# Scarborough Reef
-# Serranilla Bank
-# Seychelles (too tiny?)
-# Spratly Islands (too tiny?)
-# Tonga (too tiny?)
-# Tuvalu
 
 # TODO: Remove parts of locations
 
@@ -121,6 +125,13 @@ def center_silhouette_and_save(file_path):
     # Cropping to the silhouette
     cropped_img = img.crop((min_col, min_row, max_col, max_row))
 
+    # Check if the image is valid (non-zero width and height)
+    if cropped_img.width == 0 or cropped_img.height == 0:
+        print(f"Invalid dimensions {file_path} ({cropped_img.width}x{cropped_img.height})")
+        os.remove(file_path)
+        print(f"Removed {file_path}")
+        return
+
     # Resize while maintaining aspect ratio within 98x98 area
     aspect_ratio = cropped_img.width / cropped_img.height
     if aspect_ratio > 1:
@@ -182,14 +193,30 @@ for country, data in grouped:
 
     filename = f'{output_dir}{country}.png'
 
-    # Plot and save the image
-    fig, ax = plt.subplots()
+    # Define the size of the figure in inches (for a 100x100 px image at 100 DPI)
+    fig_size = 1 # 1 inch
+
+    # Create the figure with the defined size
+    fig, ax = plt.subplots(figsize=(fig_size, fig_size))
+
+    # Plot the country
     # country_projected.plot(ax=ax, color='black' , edgecolor='red', linewidth=2)
     country_projected.plot(ax=ax, color='black')
-    plt.axis('off')
-    plt.savefig(filename, bbox_inches='tight', pad_inches=0)
-    plt.close(fig)
 
+    # Remove axis
+    plt.axis('off')
+
+    # Magic number is generating images with a maximum dimension of 200 pixels
+    dpi = 300 * 1.3
+
+    # Define file name
+    filename = f'{output_dir}{country}.png'
+
+    # Save the figure
+    plt.savefig(filename, bbox_inches='tight', pad_inches=0, dpi=dpi)
+
+    # Close the figure
+    plt.close(fig)
     # print(f'Saved {country}')
 
     center_silhouette_and_save(filename)
