@@ -25,8 +25,6 @@ aggregated_data = grouped.agg({
     'ISO_A2': 'first',
 })
 
-
-
 # Combine aggregated data with combined geometries
 world_combined = aggregated_data.join(combined_geometries)
 
@@ -67,7 +65,7 @@ def save_country_image(geometry, name):
     ax.set_xlim(0, 100)
     ax.set_ylim(0, 100)
     ax.set_axis_off()
-    gpd.GeoSeries(geometry).plot(ax=ax, color='black', edgecolor='none')
+    gpd.GeoSeries(geometry).plot(ax=ax, color='black', edgecolor='red', linewidth=2)
     plt.gca().set_position([0, 0, 1, 1])
     plt.gca().set_aspect('equal', adjustable='box')
     plt.savefig(f'{output_dir}{name}.png', bbox_inches='tight', pad_inches=0)
@@ -83,4 +81,6 @@ for index, row in world_combined.iterrows():
     filename = f"{row['SOVEREIGNT'].replace(' ', '_')}-{row['ISO_A2']}"
 
     save_country_image(geometry, filename)
+
+    print(f'Saved {filename}')
 
