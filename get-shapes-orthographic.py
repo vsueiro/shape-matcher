@@ -19,6 +19,59 @@ world = gpd.read_file('./shape-files/ne_10m_admin_0_countries/ne_10m_admin_0_cou
 # Group by 'SOVEREIGNT' and combine geometries
 grouped = world.groupby('SOVEREIGNT')
 
+# TODO: Get more detailed shapes
+
+# Nauru (looks like a blob)
+# Monaco (looks like a blob)
+# Vatican (looks like a blob)
+
+# TODO: Remove locations
+
+# Bajo Nuevo Bank (Petrel Is.)
+# Bir Tawil * Kinda intersting tho
+# Brazilian Island
+# Federated States of Micronesia (too tiny?)
+# Kiribati (too tiny?)
+# Maldives (too tiny?)
+# Marshall Islands (too tiny?)
+# Scarborough Reef
+# Serranilla Bank
+# Seychelles (too tiny?)
+# Spratly Islands (too tiny?)
+# Tonga (too tiny?)
+# Tuvalu (too tiny?)
+
+# TODO: Remove parts of locations
+
+# Antigua and Barbuda: remove tiny island
+# Australia: remove tiny islands
+# Brazil: remove tiny islands
+# Chile: remove tiny islands
+# Colombia: remove tiny islands
+# Costa Rica: remove tiny islands
+# Equador: remove Galápagos Islands
+# Equatorial Guinea: remove Annobón
+# Fiji: remove northenmost island and southernmost island
+# France: remove all except continental France and Corse
+# Honduras: remove northenmost island
+# Netherlands: remove tiny islands
+# New Zealand: remove tiny islands
+# Norway: remove Svalbard and Jan Mayen
+# Portugal: remove tiny islands
+# South Africa: remove southernmost island
+# Spain: remove Canary Islands
+# United Kingdom: remove tiny islands
+# United States of America: remove islands (including Alaska and Puerto Rico)
+# Venezuela: remove northernmost island
+
+# TODO: Split locations
+
+# Denmark = Denmark, Greenland, Faroe Islands?
+
+# TODO: Combine locations
+
+# Cyprus + Cyprus No Mans Area + Northern Cyprus = Cyprus
+
 # Loop through each country
 for country, data in grouped:
   # Project geometries to a Cartesian coordinate system
@@ -38,7 +91,10 @@ for country, data in grouped:
 
   # Plot and save the image
   fig, ax = plt.subplots()
-  country_projected.boundary.plot(ax=ax)
-  plt.axis('off')  # Turn off axis
+  # country_projected.plot(ax=ax, color='black' , edgecolor='red', linewidth=2)
+  country_projected.plot(ax=ax, color='black')
+  plt.axis('off')
   plt.savefig(f'{output_dir}/{country}.png', bbox_inches='tight', pad_inches=0)
   plt.close(fig)
+
+  print(f'Saved {country}')
