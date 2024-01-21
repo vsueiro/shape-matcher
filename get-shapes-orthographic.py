@@ -127,7 +127,16 @@ world = world[~world['ADMIN'].isin(locations_to_remove)]
 world = world[~((world['SOVEREIGNT'] == 'United Kingdom') & (world['SUBREGION'] != 'Northern Europe'))]
 
 # Netherlands: keep only geometries near the main land
-world = clip_country_geometry(world, 'Netherlands', -4.0, 46, 13, 55)
+world = clip_country_geometry(world, 'Netherlands', -4, 46, 13, 55)
+
+# Portugal: remove tiny islands
+world = clip_country_geometry(world, 'Portugal', -12,35,-2,43)
+
+# United States of America: remove Hawaii and Canada
+world = clip_country_geometry(world, 'United States of America', -129.0,23.6,-59.3,50.2)
+
+# France: remove tiny islands
+world = clip_country_geometry(world, 'France', -6.41,38.11,12.87,51.89)
 
 # Group by 'SOVEREIGNT' and combine geometries
 grouped = world.groupby('ADMIN')
@@ -165,8 +174,8 @@ grouped = world.groupby('ADMIN')
 # Denmark = Denmark, Greenland, Faroe Islands?
 
 def center_silhouette_and_save(file_path):
-    width = 100
-    height = 100
+    width = 64
+    height = 64
     margin = 1
 
     # Load the image
