@@ -18,6 +18,12 @@ if not os.path.exists(output_dir):
 # Load Natural Earth map
 world = gpd.read_file('./shape-files/ne_10m_admin_0_countries/ne_10m_admin_0_countries.shp')
 
+# Combine locations
+
+# Cyprus
+cyprus_areas = world[world['SOVEREIGNT'].isin(['Cyprus No Mans Area', 'Northern Cyprus', 'Cyprus'])]
+world.loc[world['SOVEREIGNT'] == 'Cyprus', 'geometry'] = cyprus_areas.unary_union
+
 # List of locations to remove
 locations_to_remove = [
     "Bajo Nuevo Bank (Petrel Is.)",
@@ -33,11 +39,13 @@ locations_to_remove = [
     "Spratly Islands",
     "Tonga",
     "Tuvalu",
-    "Monaco", # (looks like a blob)
-    "Vatican", # (looks like a blob)
+    "Monaco", # looks like a blob
+    "Vatican", # looks like a blob
+    "Cyprus No Mans Area", # (merged
+    "Northern Cyprus" # merged
 ]
 
-# Remove the specified locations
+# Remove locations
 world = world[~world['SOVEREIGNT'].isin(locations_to_remove)]
 
 # Group by 'SOVEREIGNT' and combine geometries
@@ -73,10 +81,6 @@ grouped = world.groupby('SOVEREIGNT')
 # TODO: Split locations
 
 # Denmark = Denmark, Greenland, Faroe Islands?
-
-# TODO: Combine locations
-
-# Cyprus + Cyprus No Mans Area + Northern Cyprus = Cyprus
 
 def center_silhouette_and_save(file_path):
     # Load the image
