@@ -36,12 +36,17 @@ grouped = world.groupby('SOVEREIGNT')
 # Kiribati (too tiny?)
 # Maldives (too tiny?)
 # Marshall Islands (too tiny?)
+# Federated States of Micronesia ✅
+# Kiribati ✅
+# Maldives ✅
+# Marshall Islands ✅
 # Scarborough Reef
 # Serranilla Bank
 # Seychelles (too tiny?)
 # Spratly Islands (too tiny?)
 # Tonga (too tiny?)
 # Tuvalu (too tiny?)
+# Tuvalu ✅
 
 # TODO: Remove parts of locations
 
@@ -93,12 +98,25 @@ def center_silhouette_and_save(file_path):
         print("Error: The image is empty.")
         return
 
+    # Convert every pixel to black or white based on the average RGB value
+    threshold = 128
+    for i in range(img_array.shape[0]):
+        for j in range(img_array.shape[1]):
+            if img_array[i, j].mean() > threshold:
+                img_array[i, j] = [255, 255, 255]
+            else:
+                img_array[i, j] = [0, 0, 0]
+
+    # Create an Image object from the modified array
+    img = Image.fromarray(img_array)
+
     # Find non-white pixels (assuming white is [255, 255, 255])
     rows, cols = np.where(~np.all(img_array == [255, 255, 255], axis=2))
 
     # Check if any non-white pixels are found
     if rows.size == 0 or cols.size == 0:
-        print(f"No silhouette found in the image at {file_path}.")
+        os.remove(file_path)
+        print(f"Removed {file_path}")
         return
 
     # Calculate the bounding box of the silhouette
@@ -120,24 +138,35 @@ def center_silhouette_and_save(file_path):
         new_width = int(98 * aspect_ratio)
 
     resized_img = cropped_img.resize((new_width, new_height), Image.NEAREST)
+    resized_img_array = np.array(resized_img)
+
+    # Convert the resized image to black and white to ensure only these colors
+    for i in range(resized_img_array.shape[0]):
+        for j in range(resized_img_array.shape[1]):
+            if resized_img_array[i, j].mean() > threshold:
+                resized_img_array[i, j] = [255, 255, 255]
+            else:
+                resized_img_array[i, j] = [0, 0, 0]
+
+    final_resized_img = Image.fromarray(resized_img_array)
 
     # Create a new 100x100 white image
     new_img = Image.new("RGB", (100, 100), "white")
     # Calculate the position to paste (1px margin)
     x = (100 - new_width) // 2
     y = (100 - new_height) // 2
-    new_img.paste(resized_img, (x, y))
+    new_img.paste(final_resized_img, (x, y))
 
     # Check if the new 100x100 image is fully white
     new_img_array = np.array(new_img)
     if np.all(new_img_array == [255, 255, 255]):
-        print(f"The resulting image is fully white. Deleting the original image at {file_path}.")
         os.remove(file_path)
+        print(f"Removed {file_path}")
         return
-    else:
-        # Save the result if it's not fully white
-        new_img.save(file_path)
-        # print(f"Image saved as {file_path}")
+
+    # Save the result if it's not fully white
+    new_img.save(file_path)
+    # print(f"Image saved as {file_path}")
 
 # Loop through each country
 for country, data in grouped:
