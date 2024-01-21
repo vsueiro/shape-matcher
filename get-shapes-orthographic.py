@@ -20,9 +20,6 @@ if not os.path.exists(output_dir):
 # Load Natural Earth map
 world = gpd.read_file('./shape-files/ne_10m_admin_0_countries/ne_10m_admin_0_countries.shp')
 
-# print(world[world["SOVEREIGNT"] == "Kazakhstan"])
-# exit()
-
 def clip_country_geometry(world_df, country_name, minx, miny, maxx, maxy):
     """
     Clips the geometry of a specified country within a GeoDataFrame to a given bounding box.
@@ -125,7 +122,7 @@ locations_to_remove = [
     "US Naval Base Guantanamo Bay", # ADMIN
     "Sint Maarten", # ADMIN
     "Saint Barthelemy", # ADMIN
-    "Nauru", # ADMIN (too tiny)
+    "Nauru", # ADMIN looks like a blob
 ]
 
 # Remove locations
