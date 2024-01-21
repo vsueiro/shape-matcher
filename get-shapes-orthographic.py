@@ -32,21 +32,16 @@ grouped = world.groupby('SOVEREIGNT')
 # Bajo Nuevo Bank (Petrel Is.)
 # Bir Tawil * Kinda intersting tho
 # Brazilian Island
-# Federated States of Micronesia (too tiny?)
-# Kiribati (too tiny?)
-# Maldives (too tiny?)
-# Marshall Islands (too tiny?)
-# Federated States of Micronesia ✅
-# Kiribati ✅
-# Maldives ✅
-# Marshall Islands ✅
+# Federated States of Micronesia
+# Kiribati
+# Maldives
+# Marshall Islands
 # Scarborough Reef
 # Serranilla Bank
 # Seychelles (too tiny?)
 # Spratly Islands (too tiny?)
 # Tonga (too tiny?)
-# Tuvalu (too tiny?)
-# Tuvalu ✅
+# Tuvalu
 
 # TODO: Remove parts of locations
 
