@@ -48,6 +48,11 @@ locations_to_remove = [
 # Remove locations
 world = world[~world['SOVEREIGNT'].isin(locations_to_remove)]
 
+# Remove parts of locations
+
+# United Kingdom: remove tiny islands
+world = world[~((world['SOVEREIGNT'] == 'United Kingdom') & (world['SUBREGION'] != 'Northern Europe'))]
+
 # Group by 'SOVEREIGNT' and combine geometries
 grouped = world.groupby('SOVEREIGNT')
 
@@ -74,7 +79,7 @@ grouped = world.groupby('SOVEREIGNT')
 # Portugal: remove tiny islands
 # South Africa: remove southernmost island
 # Spain: remove Canary Islands
-# United Kingdom: remove tiny islands
+# 
 # United States of America: remove islands (including Alaska and Puerto Rico)
 # Venezuela: remove northernmost island
 
