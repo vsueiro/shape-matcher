@@ -4,6 +4,8 @@ import pandas as pd
 import geopandas as gpd
 import matplotlib.pyplot as plt
 import os
+import random
+# from shapely.geometry import MultiPolygon
 from shapely.geometry import box
 
 # Set the option to display all columns
@@ -18,9 +20,69 @@ if not os.path.exists(output_dir):
 # Load Natural Earth map
 world = gpd.read_file('./shape-files/ne_10m_admin_0_countries/ne_10m_admin_0_countries.shp')
 
-# print(world[world["SOVEREIGNT"] == "Denmark"])
+def clip_country_geometry(world_df, country_name, minx, miny, maxx, maxy):
+    """
+    Clips the geometry of a specified country within a GeoDataFrame to a given bounding box.
 
-# exit()
+    Parameters:
+    world_df (GeoDataFrame): The GeoDataFrame containing country geometries.
+    country_name (str): The name of the country to clip.
+    minx, miny, maxx, maxy (float): The minimum and maximum x and y coordinates of the bounding box.
+
+    Returns:
+    GeoDataFrame: The original GeoDataFrame with the specified country's geometry clipped.
+    """
+
+    # Create the bounding box
+    bbox = box(minx, miny, maxx, maxy)
+
+    # Isolate the specified country
+    country = world_df[world_df['ADMIN'] == country_name]
+
+    # Clip the country geometry with the bounding box
+    country_clipped = gpd.clip(country, bbox)
+
+    # Replace the original country geometry in the world DataFrame
+    if not country_clipped.empty:
+        world_df.loc[world_df['ADMIN'] == country_name, 'geometry'] = country_clipped.geometry.values[0]
+    else:
+        print(f"No part of {country_name} falls within the specified bounding box.")
+
+    plot_country_multipolygons(world_df, country_name, 'test.png')
+
+    return world_df
+
+def plot_country_multipolygons(gdf, country_name, output_file):
+    """
+    Plots each polygon of a multipolygon geometry of a specified country in different colors.
+
+    :param gdf: GeoDataFrame containing country geometries.
+    :param country_name: The name of the country to plot.
+    :param output_file: Path to save the output plot image.
+    """
+    print(f"Number of polygons in the {country_name}: {len(world[world['ADMIN'] == country_name].geometry.iloc[0].geoms)}")
+
+    # Get the geometry of the specified country
+    country_geometry = gdf[gdf['ADMIN'] == country_name].geometry.iloc[0]
+
+    # Check if the geometry is a MultiPolygon
+    if country_geometry.geom_type == 'MultiPolygon':
+        # Create a figure and axis for plotting
+        fig, ax = plt.subplots()
+
+        # Loop through each polygon in the MultiPolygon
+        for polygon in country_geometry.geoms:
+            # Generate a random color
+            color = "#{:06x}".format(random.randint(0, 0xFFFFFF))
+
+            # Plot the polygon with the generated color
+            gpd.GeoSeries([polygon]).plot(ax=ax, edgecolor=color, linewidth=3, facecolor=color)
+
+        # Save the figure
+        plt.savefig(output_file, dpi=300)
+        # plt.show()
+    else:
+        print(f"The geometry of {country_name} is not a MultiPolygon.")
 
 # Combine locations
 
@@ -64,6 +126,9 @@ world = world[~world['ADMIN'].isin(locations_to_remove)]
 # United Kingdom: remove tiny islands
 world = world[~((world['SOVEREIGNT'] == 'United Kingdom') & (world['SUBREGION'] != 'Northern Europe'))]
 
+# Netherlands: keep only geometries near the main land
+world = clip_country_geometry(world, 'Netherlands', -4.0, 46, 13, 55)
+
 # Group by 'SOVEREIGNT' and combine geometries
 grouped = world.groupby('ADMIN')
 
@@ -100,6 +165,10 @@ grouped = world.groupby('ADMIN')
 # Denmark = Denmark, Greenland, Faroe Islands?
 
 def center_silhouette_and_save(file_path):
+    width = 100
+    height = 100
+    margin = 1
+
     # Load the image
     try:
         img = Image.open(file_path)
@@ -157,12 +226,12 @@ def center_silhouette_and_save(file_path):
     aspect_ratio = cropped_img.width / cropped_img.height
     if aspect_ratio > 1:
         # Width is greater than height
-        new_width = 98
-        new_height = int(98 / aspect_ratio)
+        new_width = width - (margin * 2)
+        new_height = int(new_width / aspect_ratio)
     else:
         # Height is greater than or equal to width
-        new_height = 98
-        new_width = int(98 * aspect_ratio)
+        new_height = height - (margin * 2)
+        new_width = int(new_height * aspect_ratio)
 
     resized_img = cropped_img.resize((new_width, new_height), Image.NEAREST)
     resized_img_array = np.array(resized_img)
@@ -178,10 +247,10 @@ def center_silhouette_and_save(file_path):
     final_resized_img = Image.fromarray(resized_img_array)
 
     # Create a new 100x100 white image
-    new_img = Image.new("RGB", (100, 100), "white")
+    new_img = Image.new("RGB", (width, height), "white")
     # Calculate the position to paste (1px margin)
-    x = (100 - new_width) // 2
-    y = (100 - new_height) // 2
+    x = (width - new_width) // 2
+    y = (height - new_height) // 2
     new_img.paste(final_resized_img, (x, y))
 
     # Check if the new 100x100 image is fully white
