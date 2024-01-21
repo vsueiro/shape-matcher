@@ -156,7 +156,7 @@ for country, data in grouped:
     # Reproject the original country geometry
     country_projected = data.to_crs(proj)
 
-    filename = f'{output_dir}/{country}.png'
+    filename = f'{output_dir}{country}.png'
 
     # Plot and save the image
     fig, ax = plt.subplots()
