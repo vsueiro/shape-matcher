@@ -162,6 +162,9 @@ world = clip_country_geometry(world, 'Norway', 1.72,55.72,34.43,72.12)
 # Antigua and Barbuda: remove tiny island
 world = clip_country_geometry(world, 'Antigua and Barbuda', -62.1511,16.849,-61.4497,17.8856)
 
+# Costa Rica: remove tiny island
+world = clip_country_geometry(world, 'Costa Rica', -87.04,7.4,-81.22,11.4)
+
 # Group by 'SOVEREIGNT' and combine geometries
 grouped = world.groupby('ADMIN')
 
@@ -198,8 +201,8 @@ grouped = world.groupby('ADMIN')
 # Denmark = Denmark, Greenland, Faroe Islands?
 
 def center_silhouette_and_save(file_path):
-    width = 64
-    height = 64
+    width = 48
+    height = 48
     margin = 1
 
     # Load the image

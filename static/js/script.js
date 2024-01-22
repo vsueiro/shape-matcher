@@ -21,7 +21,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function draw(e) {
     if (!drawing) return;
-    ctx.lineWidth = 10;
+    ctx.lineWidth = 6;
     ctx.lineCap = "round";
     ctx.strokeStyle = "black";
 

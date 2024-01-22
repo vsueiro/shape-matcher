@@ -7,6 +7,7 @@
     <style>
       canvas {
         border: 1px solid black;
+        image-rendering: pixelated;
       }
       ol {
         display: flex;
@@ -23,6 +24,9 @@
       }
       figure img {
         outline: 1px solid black;
+        width: calc(48px * 2);
+        height: calc(48px * 2);
+        image-rendering: pixelated;
       }
     </style>
   </head>
@@ -30,8 +34,8 @@
     <h1>Draw a shape, find a place!</h1>
     <canvas
       id="drawingCanvas"
-      width="64"
-      height="64"
+      width="48"
+      height="48"
       style="background-color: white"
     ></canvas>
     <br />
