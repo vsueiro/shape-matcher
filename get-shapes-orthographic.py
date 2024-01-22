@@ -165,6 +165,9 @@ world = clip_country_geometry(world, 'Antigua and Barbuda', -62.1511,16.849,-61.
 # Costa Rica: remove tiny island
 world = clip_country_geometry(world, 'Costa Rica', -87.04,7.4,-81.22,11.4)
 
+# Ecuador: remove Galápagos
+world = clip_country_geometry(world, 'Ecuador', -83.07,-5.56,-74.15,2.19)
+
 # Group by 'SOVEREIGNT' and combine geometries
 grouped = world.groupby('ADMIN')
 
@@ -172,6 +175,7 @@ grouped = world.groupby('ADMIN')
 
 # Nauru (looks like a blob)
 # St Barthélemy (looks like a blob)
+# San Marino (looks like a blob)
 
 # TODO: Remove parts of locations
 
@@ -282,19 +286,32 @@ def center_silhouette_and_save(file_path):
 
     final_resized_img = Image.fromarray(resized_img_array)
 
-    # Create a new 100x100 white image
+    # Create a new white image
     new_img = Image.new("RGB", (width, height), "white")
     # Calculate the position to paste (1px margin)
     x = (width - new_width) // 2
     y = (height - new_height) // 2
     new_img.paste(final_resized_img, (x, y))
 
-    # Check if the new 100x100 image is fully white
     new_img_array = np.array(new_img)
+    
+    # Check if the new image is fully white
     if np.all(new_img_array == [255, 255, 255]):
         os.remove(file_path)
         print(f"Removed {file_path}")
         return
+    
+    # Calculate 1% of total pixels
+    threshold_pixels = round(width * height * 0.01)
+
+    # Count black pixels ([0, 0, 0] in RGB)
+    black_pixels = np.sum(np.all(new_img_array == [0, 0, 0], axis=-1))
+
+    # Check if black pixels are less than threshold_pixels
+    if black_pixels <= threshold_pixels:
+        os.remove(file_path)
+        print(f"Removed {file_path}")
+        return   
 
     # Save the result if it's not fully white
     new_img.save(file_path)
@@ -332,7 +349,7 @@ for country, data in grouped:
     # Remove axis
     plt.axis('off')
 
-    # Magic number is generating images with a maximum dimension of 200 pixels
+    # Magic number is generating images with a maximum dimension of 300 pixels
     dpi = 300 * 1.3
 
     # Define file name
